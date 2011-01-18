@@ -20,25 +20,25 @@ class Message(val senderId:Int, val documentName:String, val patchData:String,
 
 object Message { 
   val jsonBuilder = new Gson()  // used to convert objects to JSON
-	val jsonParser = new JSONParser
+  val jsonParser = new JSONParser
 
   val logPrefix = "[Message] " // for logging
 
   def fromJson(jsonData : String):Option[Message] = {
     try {
-  		deserialize(jsonParser.parse(jsonData).asInstanceOf[JSONObject])
+      deserialize(jsonParser.parse(jsonData).asInstanceOf[JSONObject])
     } catch {
       case _ => return None
-	  }
-	}
+    }
+  }
 
-	def deserialize(o:JSONObject):Option[Message] = {
+  def deserialize(o:JSONObject):Option[Message] = {
     var patchData:String = ""; var checksum:String = "";
 
-	  if (o.get("patchData") != null)	patchData = o.get("patchData").toString
-	  if (o.get("checksum") != null)	checksum = o.get("checksum").toString
+    if (o.get("patchData") != null)  patchData = o.get("patchData").toString
+    if (o.get("checksum") != null)  checksum = o.get("checksum").toString
 
-		Some(new Message(o.get("senderId").toString.toInt,
+    Some(new Message(o.get("senderId").toString.toInt,
         o.get("documentName").toString, patchData, checksum,
         o.get("conType").toString))
   }

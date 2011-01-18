@@ -14,8 +14,8 @@ import util.Log
 
 object Server extends Actor {
   private val id = 0
-	private val diffPatch = new diff_match_patch() // for diff and patch
-	private val logPrefix = "[Server] " // for logging
+  private val diffPatch = new diff_match_patch() // for diff and patch
+  private val logPrefix = "[Server] " // for logging
   private val jsonParser = new JSONParser
   private var socketConnection:IServer = null
 
@@ -29,7 +29,7 @@ object Server extends Actor {
     // Start a socket connection. All incoming data is sent to DataReceiver
     socketConnection = new org.xsocket.connection.Server(port, new DataReceiver)
     socketConnection run()
-		shutdownServer
+    shutdownServer
   }
 
 
@@ -44,7 +44,7 @@ object Server extends Actor {
         }
         case Client.cleanupMessage => Client cleanup
         case Document.cleanupMessage => Document cleanup
-				case (connectionData: String, connection: INonBlockingConnection) => {
+        case (connectionData: String, connection: INonBlockingConnection) => {
           connectClient(connectionData, connection)
         }
         case _ => Log.error(logPrefix + "unrecognized message received")
@@ -69,7 +69,7 @@ object Server extends Actor {
 
     Log.info(logPrefix + "server document digest: "
         + DigestUtils.shaHex(document(documentName) text))
-	}
+  }
 
   /**
    * Handle messages from clients.
@@ -81,22 +81,22 @@ object Server extends Actor {
       connection: INonBlockingConnection):Unit = {
     Client client(clientMessage.senderId) match {
       case Some(client) => {
-    		if (clientMessage.patchData != "") {
-    	    // Patch server shadow of the client
+        if (clientMessage.patchData != "") {
+          // Patch server shadow of the client
           val clientPatchedSuccessfully = client patch(clientMessage.patchData,
               clientMessage.checksum)
-	
-   	  		if (!clientPatchedSuccessfully) {
+  
+           if (!clientPatchedSuccessfully) {
             Log.error(logPrefix + "oh oh! wrong checksum. panicking...")
             Log.error("Client document: " + client.shadow)
             client.refresh(connection)
             return
-	      	}
+          }
 
-		      // Patch server document
-   			  patchServer(clientMessage.documentName, clientMessage.patchData)
-	      }
-		      
+          // Patch server document
+           patchServer(clientMessage.documentName, clientMessage.patchData)
+        }
+          
         sendReply(client, connection)
       }
       case _ => {
@@ -107,34 +107,34 @@ object Server extends Actor {
     }
   }
 
-	/**
+  /**
    * Calculate the diffs between the client shadow and the current server
    * document and send it to the client.
-	 * Assumes that the client shadow is up to date and passed the checksum test.
-	 */
+   * Assumes that the client shadow is up to date and passed the checksum test.
+   */
   def sendReply(client:Client, connection:INonBlockingConnection) = {
     // a snapshot of the server document
-		val serverDocument = new String(client.document.text)
+    val serverDocument = new String(client.document.text)
 
-		val diffs = diffPatch.diff_main(client shadow, serverDocument)
+    val diffs = diffPatch.diff_main(client shadow, serverDocument)
 
     client shadow = serverDocument
 
-		val patchObjects = diffPatch.patch_make(diffs)
+    val patchObjects = diffPatch.patch_make(diffs)
 
-		val patches = diffPatch.patch_toText(patchObjects)
+    val patches = diffPatch.patch_toText(patchObjects)
 
-		val checksum = DigestUtils.shaHex(client shadow)
+    val checksum = DigestUtils.shaHex(client shadow)
 
-		val messageToSend = new Message(id, client.document.name, patches, checksum,
+    val messageToSend = new Message(id, client.document.name, patches, checksum,
         client.connectionType)
 
-		if (messageToSend.patchData != "") {
-			Log.info(logPrefix + "sending to client " + client.id + ": "
+    if (messageToSend.patchData != "") {
+      Log.info(logPrefix + "sending to client " + client.id + ": "
           + messageToSend.toJson)
-		}
+    }
     Server send("m," + messageToSend.toJson, connection, client.connectionType)
-	}
+  }
 
 
   /**
@@ -142,23 +142,23 @@ object Server extends Actor {
    */
   def send(message:String, connection:INonBlockingConnection,
       connectionType:String) = {
-		try {
-			connectionType match {
-				case "xmlsocket" =>	{
+    try {
+      connectionType match {
+        case "xmlsocket" =>  {
           connection write(message + "\0")
         }
-				case _ => {
-		    	connection write(message)
-	 	   		connection close
-				}
-			}
-		} catch { 
-			case e: Exception => Log.error(e.getStackTraceString)
-			case _ => {
+        case _ => {
+          connection write(message)
+            connection close
+        }
+      }
+    } catch { 
+      case e: Exception => Log.error(e.getStackTraceString)
+      case _ => {
         Log.error("Error sending message. Disconnecting...")
         connection close
       }
-		}
+    }
   }
 
   def document(documentName : String) = {
@@ -169,7 +169,7 @@ object Server extends Actor {
     socketConnection close
   }
   
-	def connectClient(clientData:String, clientStream : INonBlockingConnection) {
+  def connectClient(clientData:String, clientStream : INonBlockingConnection) {
     val parsedClientData =
         jsonParser.parse(clientData).asInstanceOf[JSONObject];
 
@@ -181,16 +181,16 @@ object Server extends Actor {
 
     if (parsedClientData.get("documentName") == null) {
       Log.error("Document name not found in client's connection request")
-			clientStream.close
+      clientStream.close
       return
     }
 
-		val connectionType = parsedClientData.get("connectionType").toString
+    val connectionType = parsedClientData.get("connectionType").toString
 
     val documentName = parsedClientData.get("documentName").toString
 
-		// Store the client connection and generate a client id
-		val client = Client add(document(documentName), connectionType) 
+    // Store the client connection and generate a client id
+    val client = Client add(document(documentName), connectionType) 
 
     client sendDocument(clientStream)
   }
@@ -200,7 +200,7 @@ object Main {
   /**
    * Main entry point.
    */
-	def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit = {
     if (args.length < 1) {
       println("Args: port-number")
       return
@@ -208,7 +208,7 @@ object Main {
 
     val portNumber: Int = args(0).toInt
 
-		Server start()
+    Server start()
     Cleanup start()
     
     Server connect(portNumber)

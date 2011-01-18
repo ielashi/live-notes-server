@@ -16,30 +16,30 @@ class Client(val id:Int, val document:Document, val connectionType:String) {
 
   def logPrefix = "[Client " + id + "] "
 
-	/**
-	 * Applies the provided patches to the document shadow of the client with
+  /**
+   * Applies the provided patches to the document shadow of the client with
    * the id specified. It also verifies, through the checksum, that the patch
    * has been applied successfully.
-	 */
+   */
   def patch(patch:String, checksum:String):Boolean = {
-		if (patch != "") {
-			val patchObjects = Client.diffPatch.patch_fromText(patch)
+    if (patch != "") {
+      val patchObjects = Client.diffPatch.patch_fromText(patch)
 
-			val result = Client.diffPatch.patch_apply(patchObjects, shadow)
+      val result = Client.diffPatch.patch_apply(patchObjects, shadow)
 
-			val patchedDocument = result(0).asInstanceOf[String]
+      val patchedDocument = result(0).asInstanceOf[String]
 
-			shadow = patchedDocument
-		
-			val resultChecksum = DigestUtils.shaHex(shadow)
+      shadow = patchedDocument
+    
+      val resultChecksum = DigestUtils.shaHex(shadow)
 
-    	Log.info(logPrefix + "Document digest: " + resultChecksum)
+      Log.info(logPrefix + "Document digest: " + resultChecksum)
 
-			return (resultChecksum == checksum)
-		} else {
-			return true
-		}
-	}
+      return (resultChecksum == checksum)
+    } else {
+      return true
+    }
+  }
 
   /**
    * In case the client goes out of sync with the server, revert the client's
@@ -52,8 +52,8 @@ class Client(val id:Int, val document:Document, val connectionType:String) {
   }
 
   def sendDocument(connection:INonBlockingConnection) = {
-		Log.info(logPrefix + "Sending document")
-		val request = new ConnectionRequest(id, document.text, connectionType)
+    Log.info(logPrefix + "Sending document")
+    val request = new ConnectionRequest(id, document.text, connectionType)
     Server send("c," + request.toJson, connection, connectionType)
   }
 
@@ -66,12 +66,12 @@ object Client {
 
   private val logPrefix = "[Client Manager] "
 
-	private val diffPatch = new diff_match_patch() // for diff and patch
+  private val diffPatch = new diff_match_patch() // for diff and patch
 
   val cleanupMessage = "cleanup clients"
 
   // If clients lost pulse for more than this time, they will be removed
-  val cleanupInterval = 5 * 60 * 1000	
+  val cleanupInterval = 5 * 60 * 1000  
 
   def client(i: Int):Option[Client] = {
     if (clients.contains(i)) {

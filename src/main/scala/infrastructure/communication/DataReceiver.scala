@@ -33,8 +33,8 @@ class DataReceiver extends IDataHandler {
         Message.fromJson(messageData) match {
           case Some(message) => Server ! (message, nbc) 
           case _ => {
-						Log.error(logPrefix + "unrecognized message: " + messageData) 
-					}
+            Log.error(logPrefix + "unrecognized message: " + messageData) 
+          }
         }
       }
 
