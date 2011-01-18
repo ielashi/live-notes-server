@@ -15,7 +15,7 @@ object Cleanup extends Actor {
       // check if no response from clients periodically
       Thread.sleep(Client cleanupInterval)
       Server ! Client.cleanupMessage
-			cleanupCounter += 1
+      cleanupCounter += 1
 
       if (cleanupCounter >= 12) {
         Server ! Document.cleanupMessage
