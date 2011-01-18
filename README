@@ -1,0 +1,24 @@
+This is the server component of "Live Notes". The server is responsible for
+managing and syncing between clients.
+
+To run:
+- Clone the repository.
+
+- Open the directory of the repository.
+
+- Create a folder called "lib" and include in it the following jars:
+  - commons-codec-1.4.jar
+  - google-gson-1.4
+  - specs-1.6.2.1.jar
+  - xSocket-2.8.9.jar
+
+  These jars could easily be found and downloaded on the web.
+
+- Run the following command to automatically download other dependencies:
+  sbt update
+
+- Run the following command to run the server:
+  sbt "run <port-number>"
+
+  where <port-number> is the port number you want the server to listen on.
+  eg. sbt "run 8080" to run the server on port 8080
